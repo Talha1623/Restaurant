@@ -56,7 +56,7 @@
 <body>
     <div class="login-container">
         <div class="login-header">
-            <h2>ttt</h2>
+            <h2>Login</h2>
             <p>Enter your credentials to access the system</p>
         </div>
         
