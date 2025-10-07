@@ -7,6 +7,8 @@ use App\Models\Menu;
 use App\Models\Restaurant;
 use App\Models\RestaurantCategory;
 use App\Models\RestaurantAddon;
+use App\Models\MenuCategory;
+use App\Models\SecondFlavor;
 use App\Models\MenuImage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -22,11 +24,36 @@ class ApiMenuController extends Controller
         try {
             $restaurant = Restaurant::findOrFail($restaurantId);
             
-            // Get categories for this restaurant
-            $categories = RestaurantCategory::where('restaurant_id', $restaurantId)
-                ->where('is_active', true)
+            // Get global menu categories from settings
+            $categories = MenuCategory::where('is_active', true)
                 ->orderBy('name')
-                ->get(['id', 'name', 'description']);
+                ->get(['id', 'name', 'description', 'image']);
+            
+            // Format categories with full image URL
+            $formattedCategories = $categories->map(function($category) {
+                return [
+                    'id' => $category->id,
+                    'name' => $category->name,
+                    'description' => $category->description,
+                    'image' => $category->image,
+                    'image_url' => $category->image ? asset('storage/' . $category->image) : null
+                ];
+            });
+            
+            // Get global second flavors from settings
+            $secondFlavors = SecondFlavor::where('is_active', true)
+                ->orderBy('name')
+                ->get(['id', 'name', 'image']);
+            
+            // Format second flavors with full image URL
+            $formattedSecondFlavors = $secondFlavors->map(function($flavor) {
+                return [
+                    'id' => $flavor->id,
+                    'name' => $flavor->name,
+                    'image' => $flavor->image,
+                    'image_url' => $flavor->image ? asset('storage/' . $flavor->image) : null
+                ];
+            });
             
             // Get addons for this restaurant
             $addons = RestaurantAddon::where('restaurant_id', $restaurantId)
@@ -64,7 +91,8 @@ class ApiMenuController extends Controller
                         'name' => $restaurant->business_name,
                         'legal_name' => $restaurant->legal_name
                     ],
-                    'categories' => $categories,
+                    'categories' => $formattedCategories,
+                    'second_flavors' => $formattedSecondFlavors,
                     'addons' => $addons,
                     'form_options' => $formOptions
                 ]
@@ -86,7 +114,7 @@ class ApiMenuController extends Controller
     {
         try {
             $menus = Menu::where('restaurant_id', $restaurantId)
-                ->with(['images'])
+                ->with(['images', 'secondFlavor'])
                 ->orderBy('created_at', 'desc')
                 ->paginate(10);
             
@@ -119,6 +147,7 @@ class ApiMenuController extends Controller
                 'vat_price' => 'nullable|numeric|min:0',
                 'currency' => 'required|string|in:GBP,USD,EUR,PKR',
                 'category' => 'required|string|max:255',
+                'second_flavor_id' => 'nullable|integer|exists:second_flavors,id',
                 'status' => 'required|in:active,inactive',
                 'is_available' => 'boolean',
                 'spice_level' => 'nullable|integer|min:0|max:5',
@@ -182,7 +211,7 @@ class ApiMenuController extends Controller
             }
 
             // Load relationships for response
-            $menu->load(['images', 'restaurant']);
+            $menu->load(['images', 'restaurant', 'secondFlavor']);
 
             return response()->json([
                 'success' => true,
@@ -207,7 +236,7 @@ class ApiMenuController extends Controller
         try {
             $menu = Menu::where('restaurant_id', $restaurantId)
                 ->where('id', $menuId)
-                ->with(['images', 'restaurant'])
+                ->with(['images', 'restaurant', 'secondFlavor'])
                 ->firstOrFail();
             
             return response()->json([
@@ -243,6 +272,7 @@ class ApiMenuController extends Controller
                 'vat_price' => 'nullable|numeric|min:0',
                 'currency' => 'sometimes|required|string|in:GBP,USD,EUR,PKR',
                 'category' => 'sometimes|required|string|max:255',
+                'second_flavor_id' => 'nullable|integer|exists:second_flavors,id',
                 'status' => 'sometimes|required|in:active,inactive',
                 'is_available' => 'boolean',
                 'spice_level' => 'nullable|integer|min:0|max:5',

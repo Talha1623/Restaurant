@@ -18,6 +18,7 @@ class Menu extends Model
         'currency',
         'category',
         'category_id',
+        'second_flavor_id',
         'image',
         'status',
         'is_available',
@@ -83,6 +84,11 @@ class Menu extends Model
     public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class, 'category_id');
+    }
+
+    public function secondFlavor(): BelongsTo
+    {
+        return $this->belongsTo(\App\Models\SecondFlavor::class, 'second_flavor_id');
     }
 
     /**

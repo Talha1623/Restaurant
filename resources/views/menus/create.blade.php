@@ -80,6 +80,26 @@
                     </div>
                     
                     <div>
+                        <label for="second_flavor_id" class="block text-sm font-medium text-gray-700 mb-1">Second Flavor</label>
+                        <select id="second_flavor_id" name="second_flavor_id" 
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 @error('second_flavor_id') border-red-500 @enderror">
+                            <option value="">Select Flavor (Optional)</option>
+                            @if($secondFlavors && $secondFlavors->count() > 0)
+                                @foreach($secondFlavors as $flavor)
+                                    <option value="{{ $flavor->id }}" {{ old('second_flavor_id') == $flavor->id ? 'selected' : '' }}>
+                                        {{ $flavor->name }}
+                                    </option>
+                                @endforeach
+                            @else
+                                <option value="" disabled>No flavors available</option>
+                            @endif
+                        </select>
+                        @error('second_flavor_id')
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+                    
+                    <div>
                         <label for="price" class="block text-sm font-medium text-gray-700 mb-1">Price *</label>
                         <input type="number" id="price" name="price" value="{{ old('price') }}" 
                                step="0.01" min="0" 

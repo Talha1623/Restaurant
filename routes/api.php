@@ -8,6 +8,8 @@ use App\Http\Controllers\Api\CertificateController;
 use App\Http\Controllers\Api\CustomerController;
 use App\Http\Controllers\Api\CustomerAuthController;
 use App\Http\Controllers\Api\MenuCategoryController;
+use App\Http\Controllers\Api\SecondFlavorController;
+use App\Http\Controllers\Api\SliderController;
 
 /*
 |--------------------------------------------------------------------------
@@ -156,5 +158,37 @@ Route::prefix('menu-categories')->group(function () {
         Route::put('/{id}', [MenuCategoryController::class, 'update']);
         Route::delete('/{id}', [MenuCategoryController::class, 'destroy']);
         Route::post('/{id}/toggle', [MenuCategoryController::class, 'toggle']);
+    });
+});
+
+// Second Flavor Management API Routes
+Route::prefix('second-flavors')->group(function () {
+    // Public routes (no authentication required)
+    Route::get('/', [SecondFlavorController::class, 'index']);
+    Route::get('/{id}', [SecondFlavorController::class, 'show']);
+    
+    // Protected admin routes (authentication required)
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::get('/all', [SecondFlavorController::class, 'all']);
+        Route::post('/', [SecondFlavorController::class, 'store']);
+        Route::put('/{id}', [SecondFlavorController::class, 'update']);
+        Route::delete('/{id}', [SecondFlavorController::class, 'destroy']);
+        Route::post('/{id}/toggle', [SecondFlavorController::class, 'toggle']);
+    });
+});
+
+// Slider Management API Routes
+Route::prefix('sliders')->group(function () {
+    // Public routes (no authentication required)
+    Route::get('/', [SliderController::class, 'index']);
+    Route::get('/{id}', [SliderController::class, 'show']);
+    
+    // Protected admin routes (authentication required)
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::get('/all', [SliderController::class, 'all']);
+        Route::post('/', [SliderController::class, 'store']);
+        Route::put('/{id}', [SliderController::class, 'update']);
+        Route::delete('/{id}', [SliderController::class, 'destroy']);
+        Route::post('/{id}/toggle', [SliderController::class, 'toggle']);
     });
 });

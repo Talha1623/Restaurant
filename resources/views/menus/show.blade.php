@@ -82,6 +82,22 @@
                                 </span>
                             </div>
                             
+                            @if($menu->secondFlavor)
+                                <div>
+                                    <label class="text-sm font-medium text-gray-500">Second Flavor</label>
+                                    <div class="flex items-center gap-2 mt-1">
+                                        @if($menu->secondFlavor->image)
+                                            <img src="{{ asset('storage/' . $menu->secondFlavor->image) }}" 
+                                                 alt="{{ $menu->secondFlavor->name }}" 
+                                                 class="w-10 h-10 rounded-lg object-cover">
+                                        @endif
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-medium bg-purple-100 text-purple-800">
+                                            {{ $menu->secondFlavor->name }}
+                                        </span>
+                                    </div>
+                                </div>
+                            @endif
+                            
                             <div>
                                 <label class="text-sm font-medium text-gray-500">Price</label>
                                 <p class="text-2xl font-bold text-green-600">£{{ number_format($menu->price, 2) }}</p>

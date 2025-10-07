@@ -16,6 +16,18 @@
                         <i class="fas fa-building mr-3"></i>
                         Issuing Authorities
                     </a>
+                    <a href="{{ route('settings.index', ['tab' => 'restaurant-categories']) }}" id="restaurant-categories-tab" class="flex items-center px-4 py-2 {{ $activeTab === 'restaurant-categories' ? 'text-gray-700 bg-green-50 border-r-4 rounded-l-md' : 'text-gray-600 hover:bg-gray-50 rounded-md' }} transition nav-link {{ $activeTab === 'restaurant-categories' ? 'active' : '' }}" style="{{ $activeTab === 'restaurant-categories' ? 'border-color: #16a34a;' : '' }}">
+                        <i class="fas fa-tags mr-3"></i>
+                        Restaurant Categories
+                    </a>
+                    <a href="{{ route('settings.index', ['tab' => 'second-flavor']) }}" id="second-flavor-tab" class="flex items-center px-4 py-2 {{ $activeTab === 'second-flavor' ? 'text-gray-700 bg-green-50 border-r-4 rounded-l-md' : 'text-gray-600 hover:bg-gray-50 rounded-md' }} transition nav-link {{ $activeTab === 'second-flavor' ? 'active' : '' }}" style="{{ $activeTab === 'second-flavor' ? 'border-color: #16a34a;' : '' }}">
+                        <i class="fas fa-pepper-hot mr-3"></i>
+                        Second Flavor
+                    </a>
+                    <a href="{{ route('settings.index', ['tab' => 'slider']) }}" id="slider-tab" class="flex items-center px-4 py-2 {{ $activeTab === 'slider' ? 'text-gray-700 bg-green-50 border-r-4 rounded-l-md' : 'text-gray-600 hover:bg-gray-50 rounded-md' }} transition nav-link {{ $activeTab === 'slider' ? 'active' : '' }}" style="{{ $activeTab === 'slider' ? 'border-color: #16a34a;' : '' }}">
+                        <i class="fas fa-images mr-3"></i>
+                        Slider Management
+                    </a>
                 </nav>
             </div>
         </div>
@@ -30,6 +42,12 @@
                             Certificate Types
                         @elseif($activeTab === 'issuing-authorities')
                             Issuing Authorities
+                        @elseif($activeTab === 'restaurant-categories')
+                            Restaurant Categories
+                        @elseif($activeTab === 'second-flavor')
+                            Second Flavor
+                        @elseif($activeTab === 'slider')
+                            Slider Management
                         @else
                             Certificate Types
                         @endif
@@ -39,6 +57,12 @@
                             Manage certificate types for your restaurant certificates
                         @elseif($activeTab === 'issuing-authorities')
                             Manage issuing authorities for your restaurant certificates
+                        @elseif($activeTab === 'restaurant-categories')
+                            Manage menu categories for all restaurants
+                        @elseif($activeTab === 'second-flavor')
+                            Manage second flavor options for menu items
+                        @elseif($activeTab === 'slider')
+                            Manage app sliders for customer interface
                         @else
                             Manage certificate types for your restaurant certificates
                         @endif
@@ -247,6 +271,309 @@
                         </div>
                     </div>
 
+                    <!-- Restaurant Categories Section -->
+                    <div id="restaurant-categories-section" style="display: {{ $activeTab === 'restaurant-categories' ? 'block' : 'none' }};">
+                        <!-- Add New Category Form -->
+                        <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-200 mb-6">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                                <i class="fas fa-plus-circle text-green-500"></i>
+                                Add New Category
+                            </h3>
+                            
+                            <form method="POST" action="{{ route('settings.categories.store') }}" enctype="multipart/form-data">
+                                @csrf
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Category Name *</label>
+                                        <input type="text" name="name" required 
+                                               class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-400 focus:border-transparent"
+                                               placeholder="e.g., Pizza, Burger, Drinks">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Category Image *</label>
+                                        <input type="file" name="image" accept="image/*" required
+                                               class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-400 focus:border-transparent">
+                                        <p class="text-xs text-gray-500 mt-1">PNG, JPG, GIF (Max: 2MB)</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex justify-end mt-4">
+                                    <button type="submit" 
+                                            class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-2">
+                                        <i class="fas fa-plus"></i>
+                                        Add Category
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- Categories List -->
+                        <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                                <i class="fas fa-list text-blue-500"></i>
+                                All Categories
+                            </h3>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                @forelse($menuCategories ?? [] as $category)
+                                    <div class="bg-gray-50 rounded-lg p-4 border border-gray-200 hover:shadow-md transition">
+                                        <div class="flex items-center gap-3 mb-3">
+                                            @if($category->image)
+                                                <img src="{{ asset('storage/' . $category->image) }}" 
+                                                     alt="{{ $category->name }}" 
+                                                     class="w-16 h-16 object-cover rounded-lg">
+                                            @else
+                                                <div class="w-16 h-16 bg-gray-200 rounded-lg flex items-center justify-center">
+                                                    <i class="fas fa-image text-gray-400 text-xl"></i>
+                                                </div>
+                                            @endif
+                                            <div class="flex-1">
+                                                <h4 class="font-semibold text-gray-800">{{ $category->name }}</h4>
+                                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium {{ $category->is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
+                                                    {{ $category->is_active ? 'Active' : 'Inactive' }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="flex items-center gap-2">
+                                            <button onclick="openEditCategoryModal({{ $category->id }}, '{{ $category->name }}', '{{ $category->image }}')" 
+                                                    class="flex-1 px-3 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition">
+                                                <i class="fas fa-edit mr-1"></i> Edit
+                                            </button>
+                                            <form method="POST" action="{{ route('settings.categories.toggle', $category->id) }}" class="inline">
+                                                @csrf
+                                                <button type="submit" 
+                                                        class="px-3 py-2 bg-yellow-600 text-white text-sm rounded-lg hover:bg-yellow-700 transition">
+                                                    <i class="fas fa-toggle-{{ $category->is_active ? 'on' : 'off' }}"></i>
+                                                </button>
+                                            </form>
+                                            <form method="POST" action="{{ route('settings.categories.destroy', $category->id) }}" 
+                                                  onsubmit="return confirm('Are you sure you want to delete this category?')">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" 
+                                                        class="px-3 py-2 bg-red-600 text-white text-sm rounded-lg hover:bg-red-700 transition">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                @empty
+                                    <div class="col-span-full text-center py-8 text-gray-500">
+                                        <i class="fas fa-tags text-4xl mb-2"></i>
+                                        <p>No categories found. Add your first category above!</p>
+                                    </div>
+                                @endforelse
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Second Flavor Section -->
+                    <div id="second-flavor-section" style="display: {{ $activeTab === 'second-flavor' ? 'block' : 'none' }};">
+                        <!-- Add New Second Flavor Form -->
+                        <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-200 mb-6">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                                <i class="fas fa-plus-circle text-green-500"></i>
+                                Add New Second Flavor
+                            </h3>
+                            
+                            <form method="POST" action="{{ route('settings.second-flavor.store') }}" enctype="multipart/form-data">
+                                @csrf
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Flavor Name *</label>
+                                        <input type="text" name="name" required 
+                                               class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-400 focus:border-transparent"
+                                               placeholder="e.g., Spicy, Mild, Sweet">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Flavor Image *</label>
+                                        <input type="file" name="image" accept="image/*" required
+                                               class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-400 focus:border-transparent">
+                                        <p class="text-xs text-gray-500 mt-1">PNG, JPG, GIF (Max: 2MB)</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex justify-end mt-4">
+                                    <button type="submit" 
+                                            class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-2">
+                                        <i class="fas fa-plus"></i>
+                                        Add Second Flavor
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- Second Flavors List -->
+                        <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                                <i class="fas fa-list text-blue-500"></i>
+                                All Second Flavors
+                            </h3>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                @forelse($secondFlavors ?? [] as $flavor)
+                                    <div class="bg-gray-50 rounded-lg p-4 border border-gray-200 hover:shadow-md transition">
+                                        <div class="flex items-center gap-3 mb-3">
+                                            @if($flavor->image)
+                                                <img src="{{ asset('storage/' . $flavor->image) }}" 
+                                                     alt="{{ $flavor->name }}" 
+                                                     class="w-16 h-16 object-cover rounded-lg">
+                                            @else
+                                                <div class="w-16 h-16 bg-gray-200 rounded-lg flex items-center justify-center">
+                                                    <i class="fas fa-image text-gray-400 text-xl"></i>
+                                                </div>
+                                            @endif
+                                            <div class="flex-1">
+                                                <h4 class="font-semibold text-gray-800">{{ $flavor->name }}</h4>
+                                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium {{ $flavor->is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
+                                                    {{ $flavor->is_active ? 'Active' : 'Inactive' }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="flex items-center gap-2">
+                                            <button onclick="openEditFlavorModal({{ $flavor->id }}, '{{ $flavor->name }}', '{{ $flavor->image }}')" 
+                                                    class="flex-1 px-3 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition">
+                                                <i class="fas fa-edit mr-1"></i> Edit
+                                            </button>
+                                            <form method="POST" action="{{ route('settings.second-flavor.toggle', $flavor->id) }}" class="inline">
+                                                @csrf
+                                                <button type="submit" 
+                                                        class="px-3 py-2 bg-yellow-600 text-white text-sm rounded-lg hover:bg-yellow-700 transition">
+                                                    <i class="fas fa-toggle-{{ $flavor->is_active ? 'on' : 'off' }}"></i>
+                                                </button>
+                                            </form>
+                                            <form method="POST" action="{{ route('settings.second-flavor.destroy', $flavor->id) }}" 
+                                                  onsubmit="return confirm('Are you sure you want to delete this flavor?')">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" 
+                                                        class="px-3 py-2 bg-red-600 text-white text-sm rounded-lg hover:bg-red-700 transition">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                @empty
+                                    <div class="col-span-full text-center py-8 text-gray-500">
+                                        <i class="fas fa-pepper-hot text-4xl mb-2"></i>
+                                        <p>No second flavors found. Add your first flavor above!</p>
+                                    </div>
+                                @endforelse
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Slider Management Section -->
+                    <div id="slider-section" style="display: {{ $activeTab === 'slider' ? 'block' : 'none' }};">
+                        <!-- Add New Slider Form -->
+                        <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-200 mb-6">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                                <i class="fas fa-plus-circle text-green-500"></i>
+                                Add New Slider
+                            </h3>
+                            
+                            <form method="POST" action="{{ route('settings.slider.store') }}" enctype="multipart/form-data">
+                                @csrf
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Slider Title *</label>
+                                        <input type="text" name="title" required 
+                                               class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-400 focus:border-transparent"
+                                               placeholder="e.g., Welcome to Our Restaurant">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Slider Image *</label>
+                                        <input type="file" name="image" accept="image/*" required
+                                               class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-400 focus:border-transparent">
+                                    </div>
+                                    <div class="md:col-span-2">
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                                        <textarea name="description" rows="3" 
+                                                  class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-400 focus:border-transparent"
+                                                  placeholder="Optional description for the slider"></textarea>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex justify-end mt-4">
+                                    <button type="submit" class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">
+                                        <i class="fas fa-plus mr-2"></i>Add Slider
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- Current Sliders -->
+                        <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                                <i class="fas fa-images text-blue-500"></i>
+                                Current Sliders
+                            </h3>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                @forelse($sliders as $slider)
+                                    <div class="bg-gray-50 rounded-lg p-4 border border-gray-200 hover:shadow-md transition">
+                                        <div class="flex items-center gap-3 mb-3">
+                                            @if($slider->image)
+                                                <img src="{{ asset('storage/' . $slider->image) }}" 
+                                                     alt="{{ $slider->title }}" 
+                                                     class="w-16 h-16 object-cover rounded-lg">
+                                            @else
+                                                <div class="w-16 h-16 bg-gray-200 rounded-lg flex items-center justify-center">
+                                                    <i class="fas fa-image text-gray-400 text-xl"></i>
+                                                </div>
+                                            @endif
+                                            <div class="flex-1">
+                                                <h4 class="font-semibold text-gray-800">{{ $slider->title }}</h4>
+                                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium {{ $slider->is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
+                                                    {{ $slider->is_active ? 'Active' : 'Inactive' }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        
+                                        @if($slider->description)
+                                            <p class="text-sm text-gray-600 mb-3">{{ $slider->description }}</p>
+                                        @endif
+                                        
+                                        <div class="flex items-center justify-between">
+                                            <div class="flex items-center gap-2">
+                                                <form method="POST" action="{{ route('settings.slider.toggle', $slider->id) }}" class="inline">
+                                                    @csrf
+                                                    <button type="submit" 
+                                                            class="px-3 py-1 text-xs rounded-lg transition {{ $slider->is_active ? 'bg-red-100 text-red-700 hover:bg-red-200' : 'bg-green-100 text-green-700 hover:bg-green-200' }}">
+                                                        <i class="fas {{ $slider->is_active ? 'fa-eye-slash' : 'fa-eye' }} mr-1"></i>
+                                                        {{ $slider->is_active ? 'Deactivate' : 'Activate' }}
+                                                    </button>
+                                                </form>
+                                            </div>
+                                            
+                                            <div class="flex items-center gap-2">
+                                                <button onclick="openEditSliderModal({{ $slider->id }}, '{{ $slider->title }}', '{{ $slider->description }}', '{{ $slider->image }}')" 
+                                                        class="px-3 py-1 bg-blue-600 text-white text-xs rounded-lg hover:bg-blue-700 transition">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                                <form method="POST" action="{{ route('settings.slider.destroy', $slider->id) }}" class="inline" 
+                                                      onsubmit="return confirm('Are you sure you want to delete this slider?')">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" 
+                                                            class="px-3 py-1 bg-red-600 text-white text-xs rounded-lg hover:bg-red-700 transition">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @empty
+                                    <div class="col-span-full text-center py-8 text-gray-500">
+                                        <i class="fas fa-images text-4xl mb-2"></i>
+                                        <p>No sliders found. Add your first slider above!</p>
+                                    </div>
+                                @endforelse
+                            </div>
+                        </div>
+                    </div>
 
                 </div>
             </div>
@@ -365,7 +692,91 @@
     </div>
 </div>
 
+<!-- Edit Second Flavor Modal -->
+<div id="editFlavorModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+    <div class="bg-white rounded-xl p-6 w-full max-w-md mx-4">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold text-gray-800">Edit Second Flavor</h3>
+            <button onclick="closeEditFlavorModal()" class="text-gray-400 hover:text-gray-600">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <form id="editFlavorForm" method="POST" enctype="multipart/form-data">
+            @csrf
+            @method('PUT')
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Flavor Name *</label>
+                    <input type="text" name="name" id="editFlavorName" required 
+                           class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-400 focus:border-transparent">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Current Image</label>
+                    <img id="editFlavorCurrentImage" src="" alt="Current Image" class="w-20 h-20 object-cover rounded-lg mb-2">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">New Image (optional)</label>
+                    <input type="file" name="image" accept="image/*"
+                           class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-400 focus:border-transparent">
+                    <p class="text-xs text-gray-500 mt-1">Leave empty to keep current image</p>
+                </div>
+            </div>
+            
+            <div class="flex justify-end space-x-3 mt-6">
+                <button type="button" onclick="closeEditFlavorModal()" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">
+                    Cancel
+                </button>
+                <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                    Update Flavor
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
 
+<!-- Edit Category Modal -->
+<div id="editCategoryModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+    <div class="bg-white rounded-xl p-6 w-full max-w-md mx-4">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold text-gray-800">Edit Category</h3>
+            <button onclick="closeEditCategoryModal()" class="text-gray-400 hover:text-gray-600">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <form id="editCategoryForm" method="POST" enctype="multipart/form-data">
+            @csrf
+            @method('PUT')
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Category Name *</label>
+                    <input type="text" name="name" id="editCategoryName" required 
+                           class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-400 focus:border-transparent">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Current Image</label>
+                    <img id="editCategoryCurrentImage" src="" alt="Current Image" class="w-20 h-20 object-cover rounded-lg mb-2">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">New Image (optional)</label>
+                    <input type="file" name="image" accept="image/*"
+                           class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-400 focus:border-transparent">
+                    <p class="text-xs text-gray-500 mt-1">Leave empty to keep current image</p>
+                </div>
+            </div>
+            
+            <div class="flex justify-end space-x-3 mt-6">
+                <button type="button" onclick="closeEditCategoryModal()" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">
+                    Cancel
+                </button>
+                <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                    Update Category
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
 
 <!-- Edit Cold Drinks Addon Modal -->
 <div id="editColdDrinksAddonModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
@@ -428,6 +839,54 @@
                 <button type="submit"
                         class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition">
                     Update Category
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Edit Slider Modal -->
+<div id="editSliderModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+    <div class="bg-white rounded-xl p-6 w-full max-w-md mx-4">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold text-gray-800">Edit Slider</h3>
+            <button onclick="closeEditSliderModal()" class="text-gray-400 hover:text-gray-600">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <form id="editSliderForm" method="POST" enctype="multipart/form-data">
+            @csrf
+            @method('PUT')
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Slider Title *</label>
+                    <input type="text" name="title" id="editSliderTitle" required 
+                           class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-400 focus:border-transparent">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                    <textarea name="description" id="editSliderDescription" rows="3" 
+                              class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-400 focus:border-transparent"></textarea>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Current Image</label>
+                    <img id="editSliderCurrentImage" src="" alt="Current Image" class="w-20 h-20 object-cover rounded-lg mb-2">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">New Image (optional)</label>
+                    <input type="file" name="image" accept="image/*"
+                           class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-400 focus:border-transparent">
+                    <p class="text-xs text-gray-500 mt-1">Leave empty to keep current image</p>
+                </div>
+            </div>
+            
+            <div class="flex justify-end space-x-3 mt-6">
+                <button type="button" onclick="closeEditSliderModal()" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">
+                    Cancel
+                </button>
+                <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                    Update Slider
                 </button>
             </div>
         </form>
@@ -548,6 +1007,49 @@
     function closeEditAuthorityModal() {
         document.getElementById('editAuthorityModal').classList.add('hidden');
         document.getElementById('editAuthorityModal').classList.remove('flex');
+    }
+
+    // Category Modal Functions
+    function openEditCategoryModal(id, name, image) {
+        document.getElementById('editCategoryForm').action = `/settings/categories/${id}`;
+        document.getElementById('editCategoryName').value = name;
+        document.getElementById('editCategoryCurrentImage').src = image ? `/storage/${image}` : '';
+        document.getElementById('editCategoryModal').classList.remove('hidden');
+        document.getElementById('editCategoryModal').classList.add('flex');
+    }
+
+    function closeEditCategoryModal() {
+        document.getElementById('editCategoryModal').classList.add('hidden');
+        document.getElementById('editCategoryModal').classList.remove('flex');
+    }
+
+    // Second Flavor Modal Functions
+    function openEditFlavorModal(id, name, image) {
+        document.getElementById('editFlavorForm').action = `/settings/second-flavor/${id}`;
+        document.getElementById('editFlavorName').value = name;
+        document.getElementById('editFlavorCurrentImage').src = image ? `/storage/${image}` : '';
+        document.getElementById('editFlavorModal').classList.remove('hidden');
+        document.getElementById('editFlavorModal').classList.add('flex');
+    }
+
+    function closeEditFlavorModal() {
+        document.getElementById('editFlavorModal').classList.add('hidden');
+        document.getElementById('editFlavorModal').classList.remove('flex');
+    }
+
+    // Slider Modal Functions
+    function openEditSliderModal(id, title, description, image) {
+        document.getElementById('editSliderForm').action = `/settings/slider/${id}`;
+        document.getElementById('editSliderTitle').value = title;
+        document.getElementById('editSliderDescription').value = description || '';
+        document.getElementById('editSliderCurrentImage').src = image ? `/storage/${image}` : '';
+        document.getElementById('editSliderModal').classList.remove('hidden');
+        document.getElementById('editSliderModal').classList.add('flex');
+    }
+
+    function closeEditSliderModal() {
+        document.getElementById('editSliderModal').classList.add('hidden');
+        document.getElementById('editSliderModal').classList.remove('flex');
     }
 
     // Auto-hide success message after 5 seconds

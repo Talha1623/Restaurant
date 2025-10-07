@@ -8,6 +8,8 @@ use App\Models\RestaurantCategory;
 use App\Models\RestaurantAddon;
 use App\Models\Ingredient;
 use App\Models\Category;
+use App\Models\MenuCategory;
+use App\Models\SecondFlavor;
 use App\Models\MenuProperty;
 use App\Models\MenuOption;
 use App\Models\MenuImage;
@@ -48,19 +50,24 @@ class MenuController extends Controller
     {
         $restaurantId = $request->get('restaurant_id');
         $restaurant = null;
-        $categories = collect();
         
         if ($restaurantId) {
             $restaurant = Restaurant::findOrFail($restaurantId);
-            $categories = RestaurantCategory::where('restaurant_id', $restaurantId)
-                ->where('is_active', true)
-                ->orderBy('name')
-                ->get();
         }
+        
+        // Get global menu categories from settings
+        $categories = MenuCategory::where('is_active', true)
+            ->orderBy('name')
+            ->get();
+        
+        // Get global second flavors from settings
+        $secondFlavors = SecondFlavor::where('is_active', true)
+            ->orderBy('name')
+            ->get();
         
         $restaurantAddons = RestaurantAddon::where('restaurant_id', $restaurantId)->where('is_active', true)->get();
         
-        return view('menus.create', compact('restaurant', 'restaurantId', 'categories', 'restaurantAddons'));
+        return view('menus.create', compact('restaurant', 'restaurantId', 'categories', 'secondFlavors', 'restaurantAddons'));
     }
 
     /**
@@ -138,6 +145,7 @@ class MenuController extends Controller
      */
     public function show(Menu $menu)
     {
+        $menu->load('secondFlavor');
         return view('menus.show', compact('menu'));
     }
 
@@ -146,14 +154,19 @@ class MenuController extends Controller
      */
     public function edit(Menu $menu)
     {
-        $categories = RestaurantCategory::where('restaurant_id', $menu->restaurant_id)
-            ->where('is_active', true)
+        // Get global menu categories from settings
+        $categories = MenuCategory::where('is_active', true)
+            ->orderBy('name')
+            ->get();
+        
+        // Get global second flavors from settings
+        $secondFlavors = SecondFlavor::where('is_active', true)
             ->orderBy('name')
             ->get();
             
         $restaurantAddons = RestaurantAddon::where('restaurant_id', $menu->restaurant_id)->where('is_active', true)->get();
             
-        return view('menus.edit', compact('menu', 'categories', 'restaurantAddons'));
+        return view('menus.edit', compact('menu', 'categories', 'secondFlavors', 'restaurantAddons'));
     }
 
     /**

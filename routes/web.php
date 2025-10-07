@@ -85,6 +85,24 @@ Route::put('/settings/cold-drinks-addons/{id}', [SettingsController::class, 'upd
 Route::delete('/settings/cold-drinks-addons/{id}', [SettingsController::class, 'deleteColdDrinksAddon'])->name('settings.cold-drinks-addons.delete');
 Route::post('/settings/cold-drinks-addons/{id}/toggle', [SettingsController::class, 'toggleColdDrinksAddon'])->name('settings.cold-drinks-addons.toggle');
 
+// Restaurant Categories routes (Menu Categories)
+Route::post('/settings/categories', [SettingsController::class, 'storeCategory'])->name('settings.categories.store');
+Route::put('/settings/categories/{id}', [SettingsController::class, 'updateCategory'])->name('settings.categories.update');
+Route::delete('/settings/categories/{id}', [SettingsController::class, 'deleteCategory'])->name('settings.categories.destroy');
+Route::post('/settings/categories/{id}/toggle', [SettingsController::class, 'toggleCategory'])->name('settings.categories.toggle');
+
+// Second Flavor routes
+Route::post('/settings/second-flavor', [SettingsController::class, 'storeSecondFlavor'])->name('settings.second-flavor.store');
+Route::put('/settings/second-flavor/{id}', [SettingsController::class, 'updateSecondFlavor'])->name('settings.second-flavor.update');
+Route::delete('/settings/second-flavor/{id}', [SettingsController::class, 'deleteSecondFlavor'])->name('settings.second-flavor.destroy');
+Route::post('/settings/second-flavor/{id}/toggle', [SettingsController::class, 'toggleSecondFlavor'])->name('settings.second-flavor.toggle');
+
+// Slider routes
+Route::post('/settings/slider', [SettingsController::class, 'storeSlider'])->name('settings.slider.store');
+Route::put('/settings/slider/{id}', [SettingsController::class, 'updateSlider'])->name('settings.slider.update');
+Route::delete('/settings/slider/{id}', [SettingsController::class, 'destroySlider'])->name('settings.slider.destroy');
+Route::post('/settings/slider/{id}/toggle', [SettingsController::class, 'toggleSlider'])->name('settings.slider.toggle');
+
 // Menu routes
 Route::resource('menus', MenuController::class);
 
