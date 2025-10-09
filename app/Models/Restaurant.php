@@ -50,4 +50,20 @@ class Restaurant extends Model
     {
         return $this->hasMany(RestaurantAddon::class);
     }
+
+    /**
+     * Get the menus for the restaurant.
+     */
+    public function menus()
+    {
+        return $this->hasMany(Menu::class);
+    }
+
+    /**
+     * Get the certificates for the restaurant.
+     */
+    public function certificates()
+    {
+        return $this->hasMany(Certificate::class);
+    }
 }

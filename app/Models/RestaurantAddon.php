@@ -10,6 +10,8 @@ class RestaurantAddon extends Model
     protected $fillable = [
         'restaurant_id',
         'name',
+        'price',
+        'description',
         'image',
         'is_active'
     ];

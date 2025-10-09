@@ -51,7 +51,7 @@ class RestaurantAuthController extends Controller
             if ($validator->fails()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Validation failed',
+                    'message' => 'Email already exists',
                     'errors' => $validator->errors()
                 ], 422);
             }
@@ -78,30 +78,9 @@ class RestaurantAuthController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Restaurant registered successfully',
-                'data' => [
-                    'restaurant' => [
-                        'id' => $restaurant->id,
-                        'legal_name' => $restaurant->legal_name,
-                        'business_name' => $restaurant->business_name,
-                        'email' => $restaurant->email,
-                        'phone' => $restaurant->phone,
-                        'contact_person' => $restaurant->contact_person,
-                        'address_line1' => $restaurant->address_line1,
-                        'city' => $restaurant->city,
-                        'postcode' => $restaurant->postcode,
-                        'opening_time' => $restaurant->opening_time,
-                        'closing_time' => $restaurant->closing_time,
-                        'min_order' => $restaurant->min_order,
-                        'status' => $restaurant->status,
-                        'cuisine_tags' => $restaurant->cuisine_tags,
-                        'delivery_zone' => $restaurant->delivery_zone,
-                        'delivery_postcode' => $restaurant->delivery_postcode,
-                        'logo' => $restaurant->logo ? asset('storage/' . $restaurant->logo) : null,
-                        'banner' => $restaurant->banner ? asset('storage/' . $restaurant->banner) : null,
-                        'created_at' => $restaurant->created_at
-                    ],
+               
                     'token' => $token
-                ]
+                
             ], 201);
         } catch (Exception $e) {
             return response()->json([

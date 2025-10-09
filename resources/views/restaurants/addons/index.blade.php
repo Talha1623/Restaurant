@@ -45,24 +45,34 @@
                 <div class="divide-y divide-gray-200">
                     @foreach($addons as $addon)
                         <div class="p-6 hover:bg-gray-50 transition">
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center space-x-4">
+                            <div class="flex items-start justify-between">
+                                <div class="flex items-start space-x-4 flex-1">
                                     @if($addon->image)
                                         <img src="{{ asset('storage/' . $addon->image) }}" 
                                              alt="{{ $addon->name }}" 
-                                             class="w-12 h-12 rounded-lg object-cover">
+                                             class="w-16 h-16 rounded-lg object-cover flex-shrink-0">
                                     @else
-                                        <div class="w-12 h-12 bg-gray-200 rounded-lg flex items-center justify-center">
+                                        <div class="w-16 h-16 bg-gray-200 rounded-lg flex items-center justify-center flex-shrink-0">
                                             <i class="fas fa-glass-whiskey text-gray-400"></i>
                                         </div>
                                     @endif
-                                    <div>
-                                        <h4 class="text-lg font-medium text-gray-900">{{ $addon->name }}</h4>
-                                        <p class="text-sm text-gray-500">Created {{ $addon->created_at->format('M d, Y') }}</p>
+                                    <div class="flex-1">
+                                        <div class="flex items-center space-x-2">
+                                            <h4 class="text-lg font-medium text-gray-900">{{ $addon->name }}</h4>
+                                            @if($addon->price)
+                                                <span class="px-2 py-1 text-sm font-semibold bg-green-100 text-green-800 rounded-md">
+                                                    Rs. {{ number_format($addon->price, 2) }}
+                                                </span>
+                                            @endif
+                                        </div>
+                                        @if($addon->description)
+                                            <p class="text-sm text-gray-600 mt-1 line-clamp-2">{{ $addon->description }}</p>
+                                        @endif
+                                        <p class="text-xs text-gray-500 mt-1">Created {{ $addon->created_at->format('M d, Y') }}</p>
                                     </div>
                                 </div>
                                 
-                                <div class="flex items-center space-x-4">
+                                <div class="flex items-center space-x-4 flex-shrink-0 ml-4">
                                     <span class="px-3 py-1 text-xs rounded-full {{ $addon->is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
                                         {{ $addon->is_active ? 'Active' : 'Inactive' }}
                                     </span>

@@ -248,6 +248,291 @@ class CertificateController extends Controller
     }
 
     /**
+     * View certificate with ID in request body
+     */
+    public function viewWithIdInBody(Request $request)
+    {
+        try {
+            // Debug: Check what data is being received
+            $requestData = $request->all();
+            
+            // Validate the incoming request to ensure 'id' is present
+            $validator = Validator::make($request->all(), [
+                'id' => 'required|integer'
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validation failed',
+                    'errors' => $validator->errors(),
+                    'debug_request_data' => $requestData
+                ], 422);
+            }
+
+            // Retrieve the certificate by ID from the request body
+            $certificateId = $request->input('id');
+            
+            // Debug: Log what ID we're actually receiving
+            \Log::info('Certificate View Request', [
+                'received_id' => $certificateId,
+                'request_all' => $request->all(),
+                'content_type' => $request->header('Content-Type')
+            ]);
+            
+            // Check if certificate exists
+            $certificate = Certificate::with('restaurant')->find($certificateId);
+            
+            if (!$certificate) {
+                // Debug: Log all available certificate IDs
+                $allCertificateIds = Certificate::pluck('id')->toArray();
+                $totalCertificates = Certificate::count();
+                $latestCertificate = Certificate::latest()->first();
+                
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Certificate not found',
+                    'error' => "Certificate with ID {$certificateId} does not exist in the database",
+                    'debug' => [
+                        'requested_id' => $certificateId,
+                        'available_ids' => $allCertificateIds,
+                        'total_certificates' => $totalCertificates,
+                        'latest_certificate_id' => $latestCertificate ? $latestCertificate->id : 'none',
+                        'latest_certificate_name' => $latestCertificate ? $latestCertificate->name : 'none'
+                    ]
+                ], 404);
+            }
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Certificate retrieved successfully',
+                'data' => [
+                    'certificate' => $this->formatCertificate($certificate)
+                ]
+            ]);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to retrieve certificate',
+                'error' => $e->getMessage(),
+                'debug' => [
+                    'file' => $e->getFile(),
+                    'line' => $e->getLine(),
+                    'trace' => $e->getTraceAsString()
+                ]
+            ], 500);
+        }
+    }
+
+    /**
+     * Update certificate with ID in request body
+     */
+    public function updateWithIdInBody(Request $request)
+    {
+        try {
+            // Debug: Check what data is being received
+            $requestData = $request->all();
+            
+            // Validate the incoming request to ensure 'id' is present
+            $validator = Validator::make($request->all(), [
+                'id' => 'required|integer',
+                'name' => 'sometimes|required|string|max:255',
+                'type' => 'sometimes|required|string|max:255',
+                'issue_date' => 'sometimes|required|date',
+                'expiry_date' => 'nullable|date|after:issue_date',
+                'issuing_authority' => 'sometimes|required|string|max:255',
+                'certificate_number' => 'nullable|string|max:255',
+                'description' => 'nullable|string',
+                'certificate_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+                'image' => 'nullable|file|mimes:jpg,jpeg,png|max:5120',
+                'status' => 'sometimes|required|in:active,inactive,expired,pending',
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validation failed',
+                    'errors' => $validator->errors(),
+                    'debug_request_data' => $requestData
+                ], 422);
+            }
+
+            // Retrieve the certificate by ID from the request body
+            $certificateId = $request->input('id');
+            
+            // Debug: Log what ID we're actually receiving
+            \Log::info('Certificate Update Request', [
+                'received_id' => $certificateId,
+                'request_all' => $request->all(),
+                'content_type' => $request->header('Content-Type'),
+                'database_name' => \DB::connection()->getDatabaseName(),
+                'total_certificates' => Certificate::count(),
+                'certificate_exists' => Certificate::find($certificateId) ? 'YES' : 'NO'
+            ]);
+            
+            // Check if certificate exists
+            $certificate = Certificate::find($certificateId);
+            
+            if (!$certificate) {
+                // Debug: Log all available certificate IDs
+                $allCertificateIds = Certificate::pluck('id')->toArray();
+                $totalCertificates = Certificate::count();
+                $latestCertificate = Certificate::latest()->first();
+                
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Certificate not found',
+                    'error' => "Certificate with ID {$certificateId} does not exist in the database",
+                    'debug' => [
+                        'requested_id' => $certificateId,
+                        'available_ids' => $allCertificateIds,
+                        'total_certificates' => $totalCertificates,
+                        'latest_certificate_id' => $latestCertificate ? $latestCertificate->id : 'none',
+                        'latest_certificate_name' => $latestCertificate ? $latestCertificate->name : 'none'
+                    ]
+                ], 404);
+            }
+
+            $data = $request->except(['id', 'certificate_file', 'image']);
+
+            // Handle file upload
+            if ($request->hasFile('certificate_file')) {
+                // Delete old file if exists
+                if ($certificate->certificate_file && Storage::disk('public')->exists($certificate->certificate_file)) {
+                    Storage::disk('public')->delete($certificate->certificate_file);
+                }
+                $data['certificate_file'] = $request->file('certificate_file')->store('certificates', 'public');
+            }
+            
+            // Handle image upload (if separate image field)
+            if ($request->hasFile('image')) {
+                // Delete old image if exists
+                if ($certificate->certificate_file && Storage::disk('public')->exists($certificate->certificate_file)) {
+                    Storage::disk('public')->delete($certificate->certificate_file);
+                }
+                $data['certificate_file'] = $request->file('image')->store('certificates', 'public');
+            }
+
+            // Update certificate
+            $certificate->update($data);
+
+            // Load relationship for response
+            $certificate->load('restaurant');
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Certificate updated successfully',
+                'data' => [
+                    'certificate' => $this->formatCertificate($certificate)
+                ]
+            ]);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update certificate',
+                'error' => $e->getMessage(),
+                'debug' => [
+                    'file' => $e->getFile(),
+                    'line' => $e->getLine(),
+                    'trace' => $e->getTraceAsString()
+                ]
+            ], 500);
+        }
+    }
+
+    /**
+     * Delete certificate with ID in request body
+     */
+    public function deleteWithIdInBody(Request $request)
+    {
+        try {
+            // Debug: Check what data is being received
+            $requestData = $request->all();
+            
+            // Validate the incoming request to ensure 'id' is present
+            $validator = Validator::make($request->all(), [
+                'id' => 'required|integer'
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validation failed',
+                    'errors' => $validator->errors(),
+                    'debug_request_data' => $requestData
+                ], 422);
+            }
+
+            // Retrieve the certificate by ID from the request body
+            $certificateId = $request->input('id');
+            
+            // Debug: Log what ID we're actually receiving
+            \Log::info('Certificate Delete Request', [
+                'received_id' => $certificateId,
+                'request_all' => $request->all(),
+                'content_type' => $request->header('Content-Type'),
+                'database_name' => \DB::connection()->getDatabaseName(),
+                'total_certificates' => Certificate::count(),
+                'certificate_exists' => Certificate::find($certificateId) ? 'YES' : 'NO'
+            ]);
+            
+            // Check if certificate exists
+            $certificate = Certificate::find($certificateId);
+            
+            if (!$certificate) {
+                // Debug: Log all available certificate IDs
+                $allCertificateIds = Certificate::pluck('id')->toArray();
+                $totalCertificates = Certificate::count();
+                $latestCertificate = Certificate::latest()->first();
+                
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Certificate not found',
+                    'error' => "Certificate with ID {$certificateId} does not exist in the database",
+                    'debug' => [
+                        'requested_id' => $certificateId,
+                        'available_ids' => $allCertificateIds,
+                        'total_certificates' => $totalCertificates,
+                        'latest_certificate_id' => $latestCertificate ? $latestCertificate->id : 'none',
+                        'latest_certificate_name' => $latestCertificate ? $latestCertificate->name : 'none'
+                    ]
+                ], 404);
+            }
+
+            // Delete certificate file if exists
+            if ($certificate->certificate_file && Storage::disk('public')->exists($certificate->certificate_file)) {
+                Storage::disk('public')->delete($certificate->certificate_file);
+            }
+
+            // Delete certificate
+            $certificate->delete();
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Certificate deleted successfully',
+                'data' => [
+                    'deleted_certificate_id' => $certificateId,
+                    'deleted_certificate_name' => $certificate->name
+                ]
+            ]);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to delete certificate',
+                'error' => $e->getMessage(),
+                'debug' => [
+                    'file' => $e->getFile(),
+                    'line' => $e->getLine(),
+                    'trace' => $e->getTraceAsString()
+                ]
+            ], 500);
+        }
+    }
+
+    /**
      * Format certificate data for API response
      */
     private function formatCertificate($certificate)
@@ -479,13 +764,24 @@ class CertificateController extends Controller
             $query->where('type', $request->get('type'));
         }
 
-        // Get certificates with restaurant info
+        // Get certificates with restaurant info - NO LIMIT, get all
         $certificates = $query->with('restaurant')->orderBy('created_at', 'desc')->get();
+
+        // Debug: Log the query and results
+        \Log::info('Certificate List Query', [
+            'restaurant_id' => $request->get('restaurant_id'),
+            'total_found' => $certificates->count(),
+            'certificate_ids' => $certificates->pluck('id')->toArray()
+        ]);
 
         return response()->json([
             'success' => true,
             'message' => 'Certificates retrieved successfully',
-            'data' => $certificates
+            'data' => $certificates,
+            'meta' => [
+                'total_count' => $certificates->count(),
+                'restaurant_id' => $request->get('restaurant_id')
+            ]
         ]);
     }
 }

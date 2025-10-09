@@ -82,7 +82,7 @@ class MenuController extends Controller
             'price' => 'required|numeric|min:0',
             'vat_price' => 'nullable|numeric|min:0',
             'currency' => 'required|string|in:GBP,USD,EUR,PKR',
-            'category' => 'required|string|max:255',
+            'category_id' => 'required|integer|exists:menu_categories,id',
             'images' => 'nullable|array|max:5',
             'images.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
             'status' => 'required|in:active,inactive',
@@ -145,7 +145,7 @@ class MenuController extends Controller
      */
     public function show(Menu $menu)
     {
-        $menu->load('secondFlavor');
+        $menu->load(['category', 'secondFlavor']);
         return view('menus.show', compact('menu'));
     }
 
@@ -181,7 +181,7 @@ class MenuController extends Controller
             'price' => 'required|numeric|min:0',
             'vat_price' => 'nullable|numeric|min:0',
             'currency' => 'required|string|in:GBP,USD,EUR,PKR',
-            'category' => 'required|string|max:255',
+            'category_id' => 'required|integer|exists:menu_categories,id',
             'images' => 'nullable|array|max:5',
             'images.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
             'status' => 'required|in:active,inactive',

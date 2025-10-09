@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\CustomerAuthController;
 use App\Http\Controllers\Api\MenuCategoryController;
 use App\Http\Controllers\Api\SecondFlavorController;
 use App\Http\Controllers\Api\SliderController;
+use App\Http\Controllers\Api\RestaurantAddonController;
 
 /*
 |--------------------------------------------------------------------------
@@ -45,7 +46,7 @@ Route::prefix('restaurants')->group(function () {
 Route::prefix('admin')->group(function () {
     // Public restaurant listing (for customers)
     Route::get('/restaurants', [RestaurantController::class, 'index']);
-    Route::get('/restaurants/{id}', [RestaurantController::class, 'show']);
+    Route::post('/restaurants/{id}', [RestaurantController::class, 'show']);
     
     // Protected admin routes
     Route::middleware('auth:sanctum')->group(function () {
@@ -54,6 +55,23 @@ Route::prefix('admin')->group(function () {
         Route::delete('/restaurants/{id}', [RestaurantController::class, 'destroy']);
         Route::post('/restaurants/{id}/toggle-status', [RestaurantController::class, 'toggleStatus']);
         Route::post('/restaurants/{id}/toggle-block', [RestaurantController::class, 'toggleBlock']);
+    });
+});
+
+// Addon Management API Routes (Global - restaurant_id in form-data)
+Route::prefix('addons')->middleware('auth:sanctum')->group(function () {
+    // Addon create with restaurant_id in form-data
+    Route::post('/create', [App\Http\Controllers\Api\RestaurantAddonController::class, 'storeWithIdInBody']);
+});
+
+// Restaurant Management API Routes (Global - restaurant_id in form-data)
+Route::prefix('restaurants')->group(function () {
+    // Restaurant complete details for customers (public - no authentication)
+    Route::post('/complete-details', [App\Http\Controllers\Api\RestaurantController::class, 'getCompleteDetails']);
+    
+    // Restaurant view with ID in form-data (protected)
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::post('/view', [App\Http\Controllers\Api\RestaurantController::class, 'showWithIdInBody']);
     });
 });
 
@@ -91,6 +109,20 @@ Route::prefix('certificates')->group(function () {
     
     // Custom POST endpoint for certificate list
     Route::post('/list', [CertificateController::class, 'postList']);
+    
+    // Specific restaurant certificates list
+    Route::post('/restaurant-certificates', [CertificateController::class, 'postList']);
+    
+    // Certificate view with ID in body
+    Route::post('/view', [CertificateController::class, 'viewWithIdInBody']);
+    
+    // Certificate update with ID in body
+    Route::put('/update', [CertificateController::class, 'updateWithIdInBody']);
+    Route::post('/update', [CertificateController::class, 'updateWithIdInBody']);
+    
+    // Certificate delete with ID in body
+    Route::delete('/delete', [CertificateController::class, 'deleteWithIdInBody']);
+    Route::post('/delete', [CertificateController::class, 'deleteWithIdInBody']);
 });
 
 // Menu Management API Routes
@@ -112,6 +144,15 @@ Route::prefix('restaurants/{restaurant_id}')->middleware('auth:sanctum')->group(
     Route::put('/categories/{id}', [App\Http\Controllers\RestaurantCategoryController::class, 'update']);
     Route::delete('/categories/{id}', [App\Http\Controllers\RestaurantCategoryController::class, 'destroy']);
     Route::post('/categories/{id}/toggle', [App\Http\Controllers\RestaurantCategoryController::class, 'toggle']);
+    
+    // Restaurant Addon Management
+    Route::get('/addons', [RestaurantAddonController::class, 'index']);
+    Route::post('/addons', [RestaurantAddonController::class, 'store']);
+    
+    Route::get('/addons/{addonId}', [RestaurantAddonController::class, 'show']);
+    Route::put('/addons/{addonId}', [RestaurantAddonController::class, 'update']);
+    Route::delete('/addons/{addonId}', [RestaurantAddonController::class, 'destroy']);
+    Route::post('/addons/{addonId}/toggle', [RestaurantAddonController::class, 'toggle']);
 });
 
 // Customer Authentication Routes
@@ -133,6 +174,9 @@ Route::prefix('customers')->group(function () {
     // Public customer registration (no authentication required)
     Route::post('/register', [CustomerController::class, 'register']);
     
+    // Public second-flavors for customers (no authentication required)
+    Route::get('/second-flavors', [SecondFlavorController::class, 'index']);
+    
     // Public customer listing and details (for customers to view their own data)
     Route::get('/', [CustomerController::class, 'index']);
     Route::get('/{id}', [CustomerController::class, 'show']);
@@ -145,6 +189,138 @@ Route::prefix('customers')->group(function () {
         Route::post('/{id}/toggle-block', [CustomerController::class, 'toggleBlock']);
     });
 });
+
+// Menu Management API Routes (without restaurant_id in URL)
+Route::prefix('menus')->middleware('auth:sanctum')->group(function () {
+    Route::post('/add', [App\Http\Controllers\Api\ApiMenuController::class, 'storeWithoutRestaurantId']);
+    Route::post('/list', [App\Http\Controllers\Api\ApiMenuController::class, 'indexWithoutRestaurantId']);
+    Route::get('/{id}', [App\Http\Controllers\Api\ApiMenuController::class, 'showWithoutRestaurantId']);
+    Route::put('/{id}', [App\Http\Controllers\Api\ApiMenuController::class, 'updateWithoutRestaurantId']);
+    Route::put('/update', [App\Http\Controllers\Api\ApiMenuController::class, 'updateWithIdInBody']);
+    Route::post('/view', [App\Http\Controllers\Api\ApiMenuController::class, 'viewWithIdInBody']);
+    Route::delete('/delete', [App\Http\Controllers\Api\ApiMenuController::class, 'destroyWithoutRestaurantId']);
+});
+
+// Test route
+Route::get('/test', function () {
+    return response()->json(['message' => 'API is working!', 'timestamp' => now()]);
+});
+
+// Super simple menus endpoint - backup
+Route::get('/all-menus', function () {
+    return response()->json([
+        'success' => true,
+        'message' => 'Simple menus endpoint working',
+        'menus' => \App\Models\Menu::select('id', 'name', 'price', 'restaurant_id')->get()
+    ]);
+});
+
+// Debug route for menus
+Route::get('/menus/debug', function () {
+    return response()->json([
+        'message' => 'Menus debug endpoint working!',
+        'timestamp' => now(),
+        'routes_loaded' => true
+    ]);
+});
+
+// Simple menus endpoint for debugging
+Route::get('/menus/simple', function () {
+    try {
+        // Check if Menu model exists and can be accessed
+        $menuCount = \App\Models\Menu::count();
+        $restaurantCount = \App\Models\Restaurant::count();
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Database connection working!',
+            'data' => [
+                'total_menus' => $menuCount,
+                'total_restaurants' => $restaurantCount,
+                'timestamp' => now()
+            ]
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Database error',
+            'error' => $e->getMessage()
+        ], 500);
+    }
+});
+
+// Get All Menus API Route (Public - for customers) - SIMPLE VERSION
+Route::get('/menus/all', function () {
+    try {
+        // Very simple query - just get all menus
+        $menus = \App\Models\Menu::all();
+        
+        $formattedMenus = [];
+        foreach ($menus as $menu) {
+            $formattedMenus[] = [
+                'id' => $menu->id,
+                'name' => $menu->name,
+                'description' => $menu->description,
+                'price' => $menu->price,
+                'currency' => $menu->currency ?? 'GBP',
+                'restaurant_id' => $menu->restaurant_id,
+                'is_available' => $menu->is_available ?? true,
+            ];
+        }
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'All menus retrieved successfully',
+            'total_menus' => count($formattedMenus),
+            'menus' => $formattedMenus
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Error: ' . $e->getMessage()
+        ], 500);
+    }
+});
+
+// Simplified menus endpoint for debugging
+Route::get('/menus/all-simple', function () {
+    try {
+        // Get all menus without complex relationships first
+        $menus = \App\Models\Menu::where('status', 'active')->get();
+        
+        $formattedMenus = $menus->map(function($menu) {
+            return [
+                'id' => $menu->id,
+                'name' => $menu->name,
+                'description' => $menu->description,
+                'price' => $menu->price,
+                'currency' => $menu->currency ?? 'GBP',
+                'is_available' => $menu->is_available ?? true,
+            ];
+        });
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Menus retrieved successfully',
+            'data' => [
+                'total_menus' => $menus->count(),
+                'menus' => $formattedMenus
+            ]
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Failed to retrieve menus',
+            'error' => $e->getMessage()
+        ], 500);
+    }
+});
+
+// Menu by Category API Route (Public - for customers)
+Route::post('/menus/by-category', [App\Http\Controllers\Api\ApiMenuController::class, 'getMenusByCategory']);
+
+// Menu by Second Flavor API Route (Public - for customers)
+Route::post('/menus/by-flavor', [App\Http\Controllers\Api\ApiMenuController::class, 'getMenusBySecondFlavor']);
 
 // Menu Category Management API Routes
 Route::prefix('menu-categories')->group(function () {
@@ -164,7 +340,7 @@ Route::prefix('menu-categories')->group(function () {
 // Second Flavor Management API Routes
 Route::prefix('second-flavors')->group(function () {
     // Public routes (no authentication required)
-    Route::get('/', [SecondFlavorController::class, 'index']);
+    Route::get('/', [SecondFlavorController::class, 'index']);  // Back to GET method
     Route::get('/{id}', [SecondFlavorController::class, 'show']);
     
     // Protected admin routes (authentication required)

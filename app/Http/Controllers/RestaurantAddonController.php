@@ -28,6 +28,8 @@ class RestaurantAddonController extends Controller
         try {
             $request->validate([
                 'name' => 'required|string|max:255',
+                'price' => 'nullable|numeric|min:0',
+                'description' => 'nullable|string|max:1000',
                 'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             ]);
 
@@ -77,6 +79,8 @@ class RestaurantAddonController extends Controller
 
         $request->validate([
             'name' => 'required|string|max:255',
+            'price' => 'nullable|numeric|min:0',
+            'description' => 'nullable|string|max:1000',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 

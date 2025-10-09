@@ -87,13 +87,18 @@
                                             <i class="fas fa-glass-whiskey text-gray-400 text-xs"></i>
                                         </div>
                                     @endif
-                                    <span class="text-sm text-gray-700">{{ $addon->name }}</span>
+                                    <div class="flex flex-col">
+                                        <span class="text-sm text-gray-700">{{ $addon->name }}</span>
+                                        @if($addon->price)
+                                            <span class="text-xs text-green-600 font-semibold">Rs. {{ number_format($addon->price, 2) }}</span>
+                                        @endif
+                                    </div>
                                     <span class="px-2 py-1 text-xs rounded-full {{ $addon->is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
                                         {{ $addon->is_active ? 'Active' : 'Inactive' }}
                                     </span>
                                 </div>
                                 <div class="flex items-center gap-1">
-                                    <button onclick="openEditAddonModal({{ $addon->id }}, '{{ $addon->name }}', '{{ $addon->image }}')" 
+                                    <button onclick="openEditAddonModal({{ $addon->id }}, '{{ $addon->name }}', '{{ $addon->price }}', '{{ $addon->description }}', '{{ $addon->image }}')" 
                                             class="p-1 text-blue-600 hover:bg-blue-100 rounded">
                                         <i class="fas fa-edit text-xs"></i>
                                     </button>
@@ -390,14 +395,30 @@
             <div class="mb-3">
                 <label class="block text-sm font-medium text-gray-700 mb-1">Addon Name *</label>
                 <input type="text" name="name" required 
-                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500">
+                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+                       placeholder="e.g., Coca Cola, Pepsi, Fresh Juice">
             </div>
             
-            <div class="mb-4">
+            <div class="mb-3">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Price (Optional)</label>
+                <input type="number" name="price" step="0.01" min="0"
+                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+                       placeholder="e.g., 50.00">
+            </div>
+            
+            <div class="mb-3">
                 <label class="block text-sm font-medium text-gray-700 mb-1">Image (Optional)</label>
                 <input type="file" name="image" accept="image/*" 
                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500">
                 <p class="text-xs text-gray-500 mt-1">Supported formats: JPEG, PNG, JPG, GIF (Max: 2MB)</p>
+            </div>
+            
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Description (Optional)</label>
+                <textarea name="description" rows="3"
+                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+                       placeholder="Enter addon description..."></textarea>
+                <p class="text-xs text-gray-500 mt-1">Maximum 1000 characters</p>
             </div>
             
             <div class="flex justify-end gap-2">
@@ -433,7 +454,15 @@
             <div class="mb-3">
                 <label class="block text-sm font-medium text-gray-700 mb-1">Addon Name *</label>
                 <input type="text" name="name" id="editAddonName" required 
-                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500">
+                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+                       placeholder="e.g., Coca Cola, Pepsi, Fresh Juice">
+            </div>
+            
+            <div class="mb-3">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Price (Optional)</label>
+                <input type="number" name="price" id="editAddonPrice" step="0.01" min="0"
+                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+                       placeholder="e.g., 50.00">
             </div>
             
             <div class="mb-3" id="currentImageContainer" style="display: none;">
@@ -442,11 +471,19 @@
                 <p class="text-xs text-gray-500 mt-1">Upload a new image to replace it</p>
             </div>
             
-            <div class="mb-4">
+            <div class="mb-3">
                 <label class="block text-sm font-medium text-gray-700 mb-1">New Image (Optional)</label>
                 <input type="file" name="image" accept="image/*" 
                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500">
                 <p class="text-xs text-gray-500 mt-1">Supported formats: JPEG, PNG, JPG, GIF (Max: 2MB)</p>
+            </div>
+            
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Description (Optional)</label>
+                <textarea name="description" id="editAddonDescription" rows="3"
+                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+                       placeholder="Enter addon description..."></textarea>
+                <p class="text-xs text-gray-500 mt-1">Maximum 1000 characters</p>
             </div>
             
             <div class="flex justify-end gap-2">
@@ -587,6 +624,11 @@
     document.addEventListener('DOMContentLoaded', function() {
         const successMessage = document.getElementById('success-message');
         if (successMessage) {
+            // If there's a success message, show the addons dropdown
+            if (successMessage.textContent.includes('Addon')) {
+                toggleAllAddonsDropdown();
+            }
+            
             setTimeout(function() {
                 hideSuccessMessage();
             }, 5000); // 5 seconds
@@ -652,9 +694,11 @@
         document.getElementById('addAddonForm').reset();
     }
 
-    function openEditAddonModal(id, name, image) {
+    function openEditAddonModal(id, name, price, description, image) {
         document.getElementById('editAddonId').value = id;
         document.getElementById('editAddonName').value = name;
+        document.getElementById('editAddonPrice').value = price || '';
+        document.getElementById('editAddonDescription').value = description || '';
         
         // Set the form action URL
         const form = document.getElementById('editAddonForm');
@@ -682,6 +726,12 @@
 
     // Add Addon Form Submit
     document.getElementById('addAddonForm').addEventListener('submit', function(e) {
+        // Show loading state
+        const submitBtn = this.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Adding...';
+        submitBtn.disabled = true;
+        
         // Let the form submit normally for now to avoid AJAX issues
         // The form will redirect back to the same page with success message
         return true;

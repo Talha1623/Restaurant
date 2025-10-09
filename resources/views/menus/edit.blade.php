@@ -49,13 +49,13 @@
                     </div>
                     
                     <div>
-                        <label for="category" class="block text-sm font-medium text-gray-700 mb-1">Category *</label>
-                        <select id="category" name="category" 
-                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 @error('category') border-red-500 @enderror" required>
+                        <label for="category_id" class="block text-sm font-medium text-gray-700 mb-1">Category *</label>
+                        <select id="category_id" name="category_id" 
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 @error('category_id') border-red-500 @enderror" required>
                             <option value="">Select Category</option>
                             @if($categories && $categories->count() > 0)
                                 @foreach($categories as $category)
-                                    <option value="{{ $category->name }}" {{ old('category', $menu->category) == $category->name ? 'selected' : '' }}>
+                                    <option value="{{ $category->id }}" {{ old('category_id', $menu->category_id) == $category->id ? 'selected' : '' }}>
                                         {{ $category->name }}
                                     </option>
                                 @endforeach
@@ -70,7 +70,7 @@
                                 <a href="{{ route('menus.index', ['restaurant_id' => $menu->restaurant_id]) }}" class="text-blue-600 hover:underline">Add categories in Menu Management</a>
                             </p>
                         @endif
-                        @error('category')
+                        @error('category_id')
                             <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                         @enderror
                     </div>
@@ -319,7 +319,12 @@
                                             <i class="fas fa-glass-whiskey text-gray-400 text-xs"></i>
                                         </div>
                                     @endif
-                                    {{ $addon->name }}
+                                    <div class="flex flex-col">
+                                        <span>{{ $addon->name }}</span>
+                                        @if($addon->price)
+                                            <span class="text-xs text-green-600 font-semibold">Rs. {{ number_format($addon->price, 2) }}</span>
+                                        @endif
+                                    </div>
                                 </label>
                             </div>
                         @empty

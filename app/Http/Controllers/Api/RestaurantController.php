@@ -112,6 +112,177 @@ class RestaurantController extends Controller
     }
 
     /**
+     * Simple test method
+     */
+    public function getCompleteDetails(Request $request)
+    {
+        try {
+            // Validate the incoming request to ensure 'restaurant_id' is present
+            $validator = Validator::make($request->all(), [
+                'restaurant_id' => 'required|integer'
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validation failed',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+
+            // Retrieve the restaurant ID from the request body
+            $restaurantId = $request->input('restaurant_id');
+            $restaurant = Restaurant::find($restaurantId);
+
+            if (!$restaurant) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Restaurant not found',
+                    'error' => "Restaurant with ID {$restaurantId} does not exist in the database"
+                ], 404);
+            }
+
+            // STEP 3: Add menus + certificates (with debug)
+            $menus = \App\Models\Menu::where('restaurant_id', $restaurantId)
+                ->where('status', 'active')
+                ->orderBy('created_at', 'desc')
+                ->get()
+                ->map(function($menu) {
+                    return [
+                        'id' => $menu->id,
+                        'name' => $menu->name,
+                        'description' => $menu->description,
+                        'price' => $menu->price,
+                        'vat_price' => $menu->vat_price,
+                        'currency' => $menu->currency,
+                        'status' => $menu->status,
+                        'is_available' => $menu->is_available,
+                        'image_url' => $menu->image ? asset('storage/' . $menu->image) : null,
+                        'created_at' => $menu->created_at
+                    ];
+                });
+
+            // Debug certificates query (FIXED - Safe asset() handling)
+            $certificates = [];
+            try {
+                \Log::info('Starting certificates query for restaurant_id: ' . $restaurantId);
+                
+                $certificates = \App\Models\Certificate::where('restaurant_id', $restaurantId)
+                    ->where('status', 'active')
+                    ->orderBy('created_at', 'desc')
+                    ->get()
+                    ->map(function($certificate) {
+                        return [
+                            'id' => $certificate->id,
+                            'name' => $certificate->name,
+                            'type' => $certificate->type,
+                            'issue_date' => $certificate->issue_date,
+                            'expiry_date' => $certificate->expiry_date,
+                            'issuing_authority' => $certificate->issuing_authority,
+                            'certificate_file_url' => $certificate->certificate_file && is_string($certificate->certificate_file)
+                                ? asset('storage/' . ltrim($certificate->certificate_file, '/'))
+                                : null,
+                            'created_at' => $certificate->created_at
+                        ];
+                    });
+                    
+                \Log::info('Certificates query successful, count: ' . $certificates->count());
+                
+            } catch (\Exception $e) {
+                \Log::error('Certificates query failed: ' . $e->getMessage());
+                \Log::error('Certificates query error file: ' . $e->getFile() . ' line: ' . $e->getLine());
+                $certificates = collect([]);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Restaurant details retrieved successfully',
+                'data' => [
+                    'restaurant' => $this->formatRestaurant($restaurant),
+                    'menus' => $menus,
+                    'certificates' => $certificates
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to retrieve restaurant details',
+                'error' => $e->getMessage(),
+                'debug' => [
+                    'file' => $e->getFile(),
+                    'line' => $e->getLine()
+                ]
+            ], 500);
+        }
+    }
+
+    /**
+     * Get a specific restaurant with ID in request body
+     */
+    public function showWithIdInBody(Request $request)
+    {
+        try {
+            // Validate the incoming request to ensure 'id' is present
+            $validator = Validator::make($request->all(), [
+                'id' => 'required|integer'
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validation failed',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+
+            // Retrieve the restaurant ID from the request body
+            $restaurantId = $request->input('id');
+            $restaurant = Restaurant::find($restaurantId);
+
+            if (!$restaurant) {
+                // Debug: Log all available restaurant IDs
+                $allRestaurantIds = Restaurant::pluck('id')->toArray();
+                $totalRestaurants = Restaurant::count();
+                $latestRestaurant = Restaurant::latest()->first();
+                
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Restaurant not found',
+                    'error' => "Restaurant with ID {$restaurantId} does not exist in the database",
+                    'debug' => [
+                        'requested_id' => $restaurantId,
+                        'available_ids' => $allRestaurantIds,
+                        'total_restaurants' => $totalRestaurants,
+                        'latest_restaurant_id' => $latestRestaurant ? $latestRestaurant->id : 'none',
+                        'latest_restaurant_name' => $latestRestaurant ? $latestRestaurant->business_name : 'none'
+                    ]
+                ], 404);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Restaurant retrieved successfully',
+                'data' => [
+                    'restaurant' => $this->formatRestaurant($restaurant)
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to retrieve restaurant',
+                'error' => $e->getMessage(),
+                'debug' => [
+                    'file' => $e->getFile(),
+                    'line' => $e->getLine(),
+                    'trace' => $e->getTraceAsString()
+                ]
+            ], 500);
+        }
+    }
+
+    /**
      * Get a specific restaurant
      */
     public function show($id)

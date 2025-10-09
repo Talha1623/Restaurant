@@ -75,12 +75,32 @@
                                 <p class="text-lg text-gray-900">{{ $menu->name }}</p>
                             </div>
                             
-                            <div>
-                                <label class="text-sm font-medium text-gray-500">Category</label>
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
-                                    {{ $menu->category }}
-                                </span>
-                            </div>
+                            @php
+                                $resolvedCategory = null;
+                                try {
+                                    if (!empty($menu->category_id)) {
+                                        $resolvedCategory = $menu->category()->first();
+                                    }
+                                } catch (\Throwable $e) {
+                                    $resolvedCategory = null;
+                                }
+                            @endphp
+
+                            @if($resolvedCategory || !empty($menu->category))
+                                <div>
+                                    <label class="text-sm font-medium text-gray-500">Category *</label>
+                                    <div class="flex items-center gap-2 mt-1">
+                                        @if($resolvedCategory && !empty($resolvedCategory->image))
+                                            <img src="{{ asset('storage/' . $resolvedCategory->image) }}" 
+                                                 alt="{{ $resolvedCategory->name }}" 
+                                                 class="w-10 h-10 rounded-lg object-cover">
+                                        @endif
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                                            {{ $resolvedCategory ? $resolvedCategory->name : $menu->category }}
+                                        </span>
+                                    </div>
+                                </div>
+                            @endif
                             
                             @if($menu->secondFlavor)
                                 <div>
@@ -208,15 +228,25 @@
                                 $selectedAddons = \App\Models\RestaurantAddon::whereIn('id', $menu->cold_drinks_addons)->get();
                             @endphp
                             @foreach($selectedAddons as $addon)
-                                <div class="flex items-center p-2 bg-blue-50 rounded-lg">
-                                    @if($addon->image)
-                                        <img src="{{ asset('storage/' . $addon->image) }}" alt="{{ $addon->name }}" class="w-8 h-8 rounded-full mr-3 object-cover">
-                                    @else
-                                        <div class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center mr-3">
-                                            <i class="fas fa-plus text-gray-400 text-sm"></i>
+                                <div class="flex items-center justify-between p-2 bg-blue-50 rounded-lg">
+                                    <div class="flex items-center">
+                                        @if($addon->image)
+                                            <img src="{{ asset('storage/' . $addon->image) }}" alt="{{ $addon->name }}" class="w-8 h-8 rounded-full mr-3 object-cover">
+                                        @else
+                                            <div class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center mr-3">
+                                                <i class="fas fa-plus text-gray-400 text-sm"></i>
+                                            </div>
+                                        @endif
+                                        <div class="flex flex-col">
+                                            <span class="text-sm font-medium text-gray-700">{{ $addon->name }}</span>
+                                            @if($addon->description)
+                                                <span class="text-xs text-gray-500 line-clamp-1">{{ $addon->description }}</span>
+                                            @endif
                                         </div>
+                                    </div>
+                                    @if($addon->price)
+                                        <span class="text-sm font-semibold text-green-600">Rs. {{ number_format($addon->price, 2) }}</span>
                                     @endif
-                                    <span class="text-sm font-medium text-gray-700">{{ $addon->name }}</span>
                                 </div>
                             @endforeach
                         </div>

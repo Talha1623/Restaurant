@@ -4,28 +4,28 @@
 <div class="min-h-screen bg-gray-50">
     <div class="flex">
         <!-- Sidebar -->
-        <div class="w-64 bg-white shadow-lg h-screen sticky top-0 overflow-y-auto">
-            <div class="p-6">
-                <h2 class="text-xl font-bold text-gray-800 mb-6">Settings</h2>
-                <nav class="space-y-2">
-                    <a href="{{ route('settings.index', ['tab' => 'certificate-types']) }}" id="certificate-types-tab" class="flex items-center px-4 py-2 {{ $activeTab === 'certificate-types' ? 'text-gray-700 bg-green-50 border-r-4 rounded-l-md' : 'text-gray-600 hover:bg-gray-50 rounded-md' }} transition nav-link {{ $activeTab === 'certificate-types' ? 'active' : '' }}" style="{{ $activeTab === 'certificate-types' ? 'border-color: #16a34a;' : '' }}">
-                        <i class="fas fa-certificate mr-3"></i>
+        <div class="w-56 bg-white shadow-lg h-screen sticky top-0 overflow-y-auto">
+            <div class="p-4">
+                <h2 class="text-lg font-bold text-gray-800 mb-4">Settings</h2>
+                <nav class="space-y-1">
+                    <a href="{{ route('settings.index', ['tab' => 'certificate-types']) }}" id="certificate-types-tab" class="flex items-center px-3 py-1.5 text-sm {{ $activeTab === 'certificate-types' ? 'text-gray-700 bg-green-50 border-r-4 rounded-l-md' : 'text-gray-600 hover:bg-gray-50 rounded-md' }} transition nav-link {{ $activeTab === 'certificate-types' ? 'active' : '' }}" style="{{ $activeTab === 'certificate-types' ? 'border-color: #16a34a;' : '' }}">
+                        <i class="fas fa-certificate mr-2 w-4"></i>
                         Certificate Types
                     </a>
-                    <a href="{{ route('settings.index', ['tab' => 'issuing-authorities']) }}" id="issuing-authorities-tab" class="flex items-center px-4 py-2 {{ $activeTab === 'issuing-authorities' ? 'text-gray-700 bg-green-50 border-r-4 rounded-l-md' : 'text-gray-600 hover:bg-gray-50 rounded-md' }} transition nav-link {{ $activeTab === 'issuing-authorities' ? 'active' : '' }}" style="{{ $activeTab === 'issuing-authorities' ? 'border-color: #16a34a;' : '' }}">
-                        <i class="fas fa-building mr-3"></i>
+                    <a href="{{ route('settings.index', ['tab' => 'issuing-authorities']) }}" id="issuing-authorities-tab" class="flex items-center px-3 py-1.5 text-sm {{ $activeTab === 'issuing-authorities' ? 'text-gray-700 bg-green-50 border-r-4 rounded-l-md' : 'text-gray-600 hover:bg-gray-50 rounded-md' }} transition nav-link {{ $activeTab === 'issuing-authorities' ? 'active' : '' }}" style="{{ $activeTab === 'issuing-authorities' ? 'border-color: #16a34a;' : '' }}">
+                        <i class="fas fa-building mr-2 w-4"></i>
                         Issuing Authorities
                     </a>
-                    <a href="{{ route('settings.index', ['tab' => 'restaurant-categories']) }}" id="restaurant-categories-tab" class="flex items-center px-4 py-2 {{ $activeTab === 'restaurant-categories' ? 'text-gray-700 bg-green-50 border-r-4 rounded-l-md' : 'text-gray-600 hover:bg-gray-50 rounded-md' }} transition nav-link {{ $activeTab === 'restaurant-categories' ? 'active' : '' }}" style="{{ $activeTab === 'restaurant-categories' ? 'border-color: #16a34a;' : '' }}">
-                        <i class="fas fa-tags mr-3"></i>
+                    <a href="{{ route('settings.index', ['tab' => 'restaurant-categories']) }}" id="restaurant-categories-tab" class="flex items-center px-3 py-1.5 text-sm {{ $activeTab === 'restaurant-categories' ? 'text-gray-700 bg-green-50 border-r-4 rounded-l-md' : 'text-gray-600 hover:bg-gray-50 rounded-md' }} transition nav-link {{ $activeTab === 'restaurant-categories' ? 'active' : '' }}" style="{{ $activeTab === 'restaurant-categories' ? 'border-color: #16a34a;' : '' }}">
+                        <i class="fas fa-tags mr-2 w-4"></i>
                         Restaurant Categories
                     </a>
-                    <a href="{{ route('settings.index', ['tab' => 'second-flavor']) }}" id="second-flavor-tab" class="flex items-center px-4 py-2 {{ $activeTab === 'second-flavor' ? 'text-gray-700 bg-green-50 border-r-4 rounded-l-md' : 'text-gray-600 hover:bg-gray-50 rounded-md' }} transition nav-link {{ $activeTab === 'second-flavor' ? 'active' : '' }}" style="{{ $activeTab === 'second-flavor' ? 'border-color: #16a34a;' : '' }}">
-                        <i class="fas fa-pepper-hot mr-3"></i>
-                        Second Flavor
+                    <a href="{{ route('settings.index', ['tab' => 'second-flavor']) }}" id="second-flavor-tab" class="flex items-center px-3 py-1.5 text-sm {{ $activeTab === 'second-flavor' ? 'text-gray-700 bg-green-50 border-r-4 rounded-l-md' : 'text-gray-600 hover:bg-gray-50 rounded-md' }} transition nav-link {{ $activeTab === 'second-flavor' ? 'active' : '' }}" style="{{ $activeTab === 'second-flavor' ? 'border-color: #16a34a;' : '' }}">
+                        <i class="fas fa-pepper-hot mr-2 w-4"></i>
+                        Flavor
                     </a>
-                    <a href="{{ route('settings.index', ['tab' => 'slider']) }}" id="slider-tab" class="flex items-center px-4 py-2 {{ $activeTab === 'slider' ? 'text-gray-700 bg-green-50 border-r-4 rounded-l-md' : 'text-gray-600 hover:bg-gray-50 rounded-md' }} transition nav-link {{ $activeTab === 'slider' ? 'active' : '' }}" style="{{ $activeTab === 'slider' ? 'border-color: #16a34a;' : '' }}">
-                        <i class="fas fa-images mr-3"></i>
+                    <a href="{{ route('settings.index', ['tab' => 'slider']) }}" id="slider-tab" class="flex items-center px-3 py-1.5 text-sm {{ $activeTab === 'slider' ? 'text-gray-700 bg-green-50 border-r-4 rounded-l-md' : 'text-gray-600 hover:bg-gray-50 rounded-md' }} transition nav-link {{ $activeTab === 'slider' ? 'active' : '' }}" style="{{ $activeTab === 'slider' ? 'border-color: #16a34a;' : '' }}">
+                        <i class="fas fa-images mr-2 w-4"></i>
                         Slider Management
                     </a>
                 </nav>
@@ -33,11 +33,11 @@
         </div>
 
         <!-- Main Content -->
-        <div class="flex-1 p-8">
+        <div class="flex-1 p-4">
             <div class="max-w-4xl">
                 <!-- Header -->
-                <div class="mb-8">
-                    <h1 id="main-title" class="text-3xl font-bold text-gray-900">
+                <div class="mb-4">
+                    <h1 id="main-title" class="text-2xl font-bold text-gray-900">
                         @if($activeTab === 'certificate-types')
                             Certificate Types
                         @elseif($activeTab === 'issuing-authorities')
@@ -45,7 +45,7 @@
                         @elseif($activeTab === 'restaurant-categories')
                             Restaurant Categories
                         @elseif($activeTab === 'second-flavor')
-                            Second Flavor
+                            Flavor
                         @elseif($activeTab === 'slider')
                             Slider Management
                         @else
@@ -368,13 +368,13 @@
                         </div>
                     </div>
 
-                    <!-- Second Flavor Section -->
+                    <!-- Flavor Section -->
                     <div id="second-flavor-section" style="display: {{ $activeTab === 'second-flavor' ? 'block' : 'none' }};">
-                        <!-- Add New Second Flavor Form -->
+                        <!-- Add New Flavor Form -->
                         <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-200 mb-6">
                             <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
                                 <i class="fas fa-plus-circle text-green-500"></i>
-                                Add New Second Flavor
+                                Add New Flavor
                             </h3>
                             
                             <form method="POST" action="{{ route('settings.second-flavor.store') }}" enctype="multipart/form-data">
@@ -398,17 +398,17 @@
                                     <button type="submit" 
                                             class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-2">
                                         <i class="fas fa-plus"></i>
-                                        Add Second Flavor
+                                        Add Flavor
                                     </button>
                                 </div>
                             </form>
                         </div>
 
-                        <!-- Second Flavors List -->
+                        <!-- Flavors List -->
                         <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
                             <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
                                 <i class="fas fa-list text-blue-500"></i>
-                                All Second Flavors
+                                All Flavors
                             </h3>
                             
                             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -692,11 +692,11 @@
     </div>
 </div>
 
-<!-- Edit Second Flavor Modal -->
+<!-- Edit Flavor Modal -->
 <div id="editFlavorModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
     <div class="bg-white rounded-xl p-6 w-full max-w-md mx-4">
         <div class="flex items-center justify-between mb-4">
-            <h3 class="text-lg font-semibold text-gray-800">Edit Second Flavor</h3>
+            <h3 class="text-lg font-semibold text-gray-800">Edit Flavor</h3>
             <button onclick="closeEditFlavorModal()" class="text-gray-400 hover:text-gray-600">
                 <i class="fas fa-times"></i>
             </button>
@@ -1023,7 +1023,7 @@
         document.getElementById('editCategoryModal').classList.remove('flex');
     }
 
-    // Second Flavor Modal Functions
+    // Flavor Modal Functions
     function openEditFlavorModal(id, name, image) {
         document.getElementById('editFlavorForm').action = `/settings/second-flavor/${id}`;
         document.getElementById('editFlavorName').value = name;
